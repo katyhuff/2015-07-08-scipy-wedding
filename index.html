@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+                <title></title>
+
+                <meta name="description" content="Now in Automation: Weddings">
+		<meta name="author" content="Kathryn (Katy) Huff">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+                                <section>
+                                <h1>I do...</h1>
+                                <h3>...automate things.</h3>
+                                        <br/>
+                                        <h3>Katy Huff</h3>
+                                        <h3>SciPy Conference, July 8, 2015</h3>
+                                </section>
+
+                                <section>
+                                        <section>
+                                                <span class="fragment">
+                                                <a href="https://pixabay.com/static/uploads/photo/2012/04/26/19/52/love-42961_640.png"
+                                                  class="image"><img
+                                                  width="50%"
+                                                  src="https://pixabay.com/static/uploads/photo/2012/04/26/19/52/love-42961_640.png"
+                                                  alt="birds"></a>
+                                                </span>
+                                                <span class="fragment">
+                                                <br/>Weddings are great
+                                                </span>
+                                                <span class="fragment">
+                                                <br/>big events with complex logistics.
+                                                </span>
+                                        </section>
+                                        <section>
+                                                <a href="https://pixabay.com/static/uploads/photo/2014/09/12/18/23/checklist-443126_640.png"
+                                                  class="image"><img
+                                                  src="https://pixabay.com/static/uploads/photo/2014/09/12/18/23/checklist-443126_640.png"
+                                                  width="20%"
+                                                  alt="checklist"></a>
+                                        </section>
+					<section>
+                                        <h2>Colors</h2>
+                                                I'm not a designer.
+                                                <br/>
+                                                <a href="https://s-media-cache-ak0.pinimg.com/736x/48/f6/23/48f623fbd19a42ecfb7784fb1f1357e7.jpg"
+                                                  class="image"><img
+                                                  src="https://s-media-cache-ak0.pinimg.com/736x/48/f6/23/48f623fbd19a42ecfb7784fb1f1357e7.jpg"
+                                                  alt="pictalicious"></a>
+                                        </section>
+                                        <section>
+                                        <h2>Website</h2>
+                                                  Like I said, not a designer.<br/>
+                                                  <a href="http://wwwndc.jaea.go.jp/j40fig/jpeg/u235_f1.jpg"
+                                                  class="image"><img
+                                                  src="./images/github_search.png"
+                                                  width="100%"
+                                                  alt="github search"></a>
+                                        </section>
+                                        <section>
+                                        <h2>Paper Stuff</h2>
+                                                <span class="fragment">
+                                                <pre><code class="latex">
+\begin{document}
+\begin{Group}{}
+\LREntry{Parents of the Bride}{Parents of the Groom} \\
+...
+                                                </code></pre>
+                                                </span>
+                                                <br/><a href=""
+                                                  class="image"><img
+                                                  src="./images/program.png"
+                                                  alt="program"></a>
+                                        </section>
+                                        <section>
+                                        <h2>Invitations</h2>
+                                                Jinja!
+                                                <span class="fragment">
+                                                <pre><code>
+Dearest {{ guests }},
+
+With great joy, we are emailing to request the pleasure of your company at our
+wedding. It will take place at 6pm on May 16, 2015 within the Ida Noyes Hall
+Theatre Room, at the University of Chicago in Chicago, IL.  An official
+invitation is attached to this email as a pdf. More information and updates can
+be found at our website:
+
+  http://katyhuff.github.io/wedding
+
+{{ comments }}
+We hope you can confirm your attendance online by April 16, 2015. The RSVP form
+can be found on our website or at http://bit.ly/skwed.
+
+If you have any questions please send an email to {{ ouremail }}.
+
+Thank You,
+Katy Huff and Strom Borman
+                                                </code></pre>
+                                                </span>
+                                        </section>
+                                        <section>
+                                        <h2>Invitations</h2>
+                                                <span class="fragment">
+                                                <pre><code class="python">
+#!/usr/bin/env python
+
+import jinja2
+import mimetypes
+import numpy as np
+import os
+import smtplib
+import sys
+import getpass
+import email
+import email.utils
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+# Here are the email package modules we'll need
+from email.mime.image import MIMEImage
+from email.mime.application import MIMEApplication
+
+if len(sys.argv) < 3:
+    print('Usage: ./send-invitations.py invitees.csv invitation.txt.in')
+
+def get_comments(arr):
+  if len(arr['comments']) > 0:
+    return arr['comments']
+  else :
+    return ''
+
+def get_recipients(arr):
+  l=[arr['email1'],arr['email2'],arr['email3']]
+  r=[]
+  for item in l:
+    if len(item) > 0:
+      r.append(item)
+  comma=", "
+  return comma.join(r)
+
+with open(sys.argv[2], 'r') as fp:
+    email_template = fp.read()
+template = jinja2.Template(email_template)
+
+invitees = np.loadtxt(sys.argv[1],
+        delimiter='\t',
+        dtype={'names': ('invitee','email1','email2','email3','comments'),
+            'formats': ('S128', 'S128', 'S128', 'S128', 'S256')})
+
+username = 'katyhuff@gmail.com'
+password = getpass.getpass('password:')
+server = smtplib.SMTP('smtp.gmail.com:587')
+server.starttls()
+server.login(username, password)
+filename="/Users/khuff/repos/musings/wedding/wedding.pdf"
+
+for family in invitees:
+    email_body = template.render(guests=family['invitee'],
+                                 comments = get_comments(family))
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Invitation to the Wedding of Katy Huff and Strom Borman'
+    msg['From'] = 'Katy Huff and Strom Borman <stromandkaty@gmail.com>'
+    msg['To'] = get_recipients(family)
+    msg['Cc'] = 'Matthew Strom Borman <stromborman@gmail.com>,Katy Huff <katyhuff@gmail.com>'
+    msg['Date'] = email.utils.formatdate()
+    msg.attach(MIMEText(email_body, 'plain'))
+    part=MIMEApplication(open(filename).read())
+    part.add_header('Content-Disposition',
+            'attachment; filename="%s"' % os.path.basename(filename))
+    msg.attach(part)
+    from_address = 'Katy Huff <katyhuff@gmail.com>'
+    to_address = []
+    to_address.extend([em.strip() for em in get_recipients(family).split(', ')])
+
+    print(email_body)
+    server.sendmail(from_address, to_address, msg.as_string())
+                                                </code></pre>
+                                                </span>
+                                        </section>
+                                        <section>
+                                        <h2>Invitations</h2>
+                                                <span class="fragment">
+                                                <pre><code>
+Ms. Ann Testerson, Dr. Steve Testerson, and Mr. Junior Testerson        anntesterson@gmail.com     proftest@utest.edu   We are very excited to share this day with you three. Jr. is more than welcome to bring a guest.
+Mr. Single Friend and Guest                                             singleguy@yahoo.com                             We are very excited to share this day with you. You are more than welcome to bring a guest.
+Mr. Father and Mrs. Mother                                              mom@gmail.com              dad@gmail.com        We are so excited to share this day with the two of you.
+Mr. Uncle Fam, Mrs. Aunt Fam, Mr. Cousin Fam, and Mr. Cousin Fam        unclefam@gmail.com         aunt@yahoo.com       We are very excited to share this day with you. Youngcousin and Oldcousin are more than welcome to each bring a guest.
+                                                </code></pre>
+                                                </span>
+                                        </section>
+                                        <section>
+                                        <h2>Reminders</h2>
+                                        <code><pre>
+Dearest {{ guests }},
+
+We are so thrilled that you will be joining us for our wedding. Thank you for your RSVP. We have a little over a month before the big day and we are really looking forward to seeing you there! The ceremony itself will take place at 6pm on May 16, 2015 within the Ida Noyes Hall Theatre Room, at the University of Chicago in Chicago, IL.
+
+{% if welcome %}
+We are also looking forward to seeing you at the Welcome Dinner on the 15th and we hope you will consider joining us for the Farewell Brunch on the 17th.
+{%- endif %}
+{%- if not welcome %}
+We are not currently expecting to see you at the Welcome Dinner on the 15h, but we hope you will consider joining us for the Farewell Brunch on the 17th.
+{%- endif %} Both are being generously hosted by our parents. More information about
+those events can be found here:
+http://katyhuff.github.io/wedding/#events
+
+Finally, we wanted to email today to answer a few questions we have been getting:
+
+If I haven't booked a hotel yet, where should I stay?
+Some options are listed at:
+http://katyhuff.github.io/wedding/#accommodation
+
+What type of clothes should I pack?
+May in Chicago is springtime and hovers between 55 and 65 degrees F, so light layers are recommended. The wedding is indoors.
+
+How should I dress for the ceremony?
+We love to see you all looking and feeling fabulous, so semi-formal attire is encouraged for the ceremony. However, any attire is welcome if it makes you feel like celebrating!
+
+Are you registered somewhere?
+You can also find that on the website at:
+http://katyhuff.github.io/wedding/#gifts
+
+If you have any additional questions, please send an email to {{ ouremail }}.
+
+Thank You,
+                                        </code></pre>
+                                        </section>
+                                </section>
+                                <section>
+                                        <section>
+                                                <h2>Bonus</h2>
+                                                Have an Anthony Scopatz.<br/>
+                                                <a href=""
+                                                  class="image"><img
+                                                  src="./images/scopz.jpg"
+                                                  width="50%"
+                                                  alt="scopz"></a>
+                                        </section>
+                                        <section>
+                                                <h2>Bonus</h2>
+                                                Have an NLTK-generated speech by Anthony Scopatz.<br/>
+                                                <a href=""
+                                                  class="image"><img
+                                                  src="./images/kalidescopz.png"
+                                                  width="100%"
+                                                  alt="scopz"></a>
+                                          ...
+                                        </section>
+                               </section>
+				<section>
+                                        <section>
+                                        <h2>Get The Code!</h2>
+                                          <a href="http://github.com/katyhuff/wedding">
+                                                  github.com/katyhuff/wedding
+                                          </a>
+                                        </section>
+                                </section>
+				<section>
+					<h1>THE END</h1>
+                                        <h3><a
+                                            href="https://katyhuff.github.io">Katy Huff</a> </h3>
+                                        <a href="https://katyhuff.github.io/autowed">katyhuff.github.io/autowed</a>
+
+<br/>
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img
+  alt="Creative Commons License" style="border-width:0"
+  src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br /><span
+  xmlns:dct="http://purl.org/dc/terms/" property="dct:title">autowed</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://katyhuff.github.io" property="cc:attributionName" rel="cc:attributionURL">Kathryn Huff</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="http://katyhuff.github.io/autowed" rel="dct:source">http://katyhuff.github.io/autowed</a>.
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+                                        { src: 'plugin/math/math.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
